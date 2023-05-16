@@ -79,3 +79,20 @@
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
+
+/* Overwrite WalletMultiButton default CSS */
+.wallet-adapter-button-trigger {
+  font-family: "Inter" !important;
+  padding: 0 12px !important;
+  height: 40px !important;
+}
+
+.wallet-adapter-dropdown-list-item {
+  font-weight: 300 !important;
+  justify-content: flex-start !important;
+}
+
+.wallet-adapter-dropdown-list {
+  grid-row-gap: 0 !important;
+  font-family: "Inter" !important;
+}

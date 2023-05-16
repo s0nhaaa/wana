@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useRef, useState } from "react"
 import { useWallet } from "@solana/wallet-adapter-react"
 import { PublicKey } from "@solana/web3.js"
-import { ArrowRight, RotateCcw } from "lucide-react"
+import { ArrowDown, ArrowRight, RotateCcw } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -78,10 +78,11 @@ export function WalletInput() {
       </form>
       <>
         {isSubmited && (
-          <Label className=" ml-2 text-sm text-muted-foreground">
+          <Label className=" ml-2 flex items-center gap-1 text-sm text-muted-foreground">
             {isWalletAddress
-              ? "Here're your wallet history"
+              ? "Here're your wallet histories"
               : "It's not a wallet address but you can check it in Shyft Translator"}
+            <ArrowDown size={16} />
           </Label>
         )}
       </>

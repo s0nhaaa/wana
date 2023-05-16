@@ -26,7 +26,7 @@ export default function TransactionModal({
   onClick,
 }: TransationModalProps) {
   return (
-    <div className="absolute inset-0 flex select-none items-center justify-center">
+    <div className="absolute inset-0 z-30 flex select-none items-center justify-center">
       <motion.div
         key="image"
         layoutId={id}
@@ -80,85 +80,25 @@ export default function TransactionModal({
           </CardHeader>
           <CardContent className="">
             <ScrollArea className=" h-[300px] w-full">
-              <div className="grid gap-4">
-                <div className=" flex w-full space-x-4 rounded-md border p-4">
-                  <BellRing />
-                  <div className="flex-1 space-y-1">
-                    <p className="text-sm font-medium leading-none">
-                      Wrapper SOL
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      Hb2HDX6tnRfw5j442npy58Z2GBzJA58Nz7ipouWGT63p
-                    </p>
-                  </div>
-                </div>
-                <div className=" flex w-full space-x-4 rounded-md border p-4">
-                  <BellRing />
-                  <div className="flex-1 space-y-1">
-                    <p className="text-sm font-medium leading-none">
-                      Wrapper SOL
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      Hb2HDX6tnRfw5j442npy58Z2GBzJA58Nz7ipouWGT63p
-                    </p>
-                  </div>
-                </div>
-                <div className=" flex w-full space-x-4 rounded-md border p-4">
-                  <BellRing />
-                  <div className="flex-1 space-y-1">
-                    <p className="text-sm font-medium leading-none">
-                      Wrapper SOL
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      Hb2HDX6tnRfw5j442npy58Z2GBzJA58Nz7ipouWGT63p
-                    </p>
-                  </div>
-                </div>
-
-                <div className=" flex w-full space-x-4 rounded-md border p-4">
-                  <BellRing />
-                  <div className="flex-1 space-y-1">
-                    <p className="text-sm font-medium leading-none">
-                      Wrapper SOL
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      Hb2HDX6tnRfw5j442npy58Z2GBzJA58Nz7ipouWGT63p
-                    </p>
-                  </div>
-                </div>
-                <div className=" flex w-full space-x-4 rounded-md border p-4">
-                  <BellRing />
-                  <div className="flex-1 space-y-1">
-                    <p className="text-sm font-medium leading-none">
-                      Wrapper SOL
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      Hb2HDX6tnRfw5j442npy58Z2GBzJA58Nz7ipouWGT63p
-                    </p>
-                  </div>
-                </div>
-                <div className=" flex w-full space-x-4 rounded-md border p-4">
-                  <BellRing />
-                  <div className="flex-1 space-y-1">
-                    <p className="text-sm font-medium leading-none">
-                      Wrapper SOL
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      Hb2HDX6tnRfw5j442npy58Z2GBzJA58Nz7ipouWGT63p
-                    </p>
-                  </div>
-                </div>
-                <div className=" flex w-full space-x-4 rounded-md border p-4">
-                  <BellRing />
-                  <div className="flex-1 space-y-1">
-                    <p className="text-sm font-medium leading-none">
-                      Wrapper SOL
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      Hb2HDX6tnRfw5j442npy58Z2GBzJA58Nz7ipouWGT63p
-                    </p>
-                  </div>
-                </div>
+              <div className="grid gap-3">
+                {Array(10)
+                  .fill(0)
+                  .map((_, i) => (
+                    <div
+                      key={i}
+                      className=" flex w-full space-x-4 rounded-md border p-4"
+                    >
+                      <BellRing />
+                      <div className="flex-1 space-y-1">
+                        <p className="text-sm font-medium leading-none">
+                          Wrapper SOL
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          Hb2HDX6tnRfw5j442npy58Z2GBzJA58Nz7ipouWGT63p
+                        </p>
+                      </div>
+                    </div>
+                  ))}
               </div>
             </ScrollArea>
           </CardContent>

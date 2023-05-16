@@ -7,10 +7,7 @@ import {
   ConnectionProvider,
   WalletProvider,
 } from "@solana/wallet-adapter-react"
-import {
-  WalletModalProvider,
-  WalletMultiButton,
-} from "@solana/wallet-adapter-react-ui"
+import { WalletModalProvider } from "@solana/wallet-adapter-react-ui"
 import {
   BackpackWalletAdapter,
   PhantomWalletAdapter,
@@ -34,7 +31,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { SelectCluster } from "@/components/select-cluster"
+import SiteHeader from "@/components/site-header"
 import TransactionModal from "@/components/transaction-modal"
 import { WalletInput } from "@/components/wallet-input"
 
@@ -64,9 +61,8 @@ export default function IndexPage() {
         <ConnectionProvider endpoint={endpoint}>
           <WalletProvider wallets={wallets} autoConnect>
             <WalletModalProvider>
+              <SiteHeader />
               <div className="relative h-screen w-screen ">
-                <WalletMultiButton />
-                <SelectCluster />
                 <div className="flex h-full w-full items-center justify-center">
                   <div className="h-[700px] w-[60vw]">
                     <WalletInput />
@@ -81,7 +77,7 @@ export default function IndexPage() {
                             layoutId={String(i)}
                           >
                             <Card
-                              className="relative select-none"
+                              className="relative select-none hover:border-accent-foreground"
                               onClick={() => setIndex(i)}
                             >
                               <CardHeader>
@@ -166,8 +162,7 @@ export default function IndexPage() {
                       animate={{ opacity: 0.6 }}
                       exit={{ opacity: 0 }}
                       key="overlay"
-                      className="absolute inset-0 bg-slate-900 opacity-[0.2]"
-                      onClick={() => setIndex(false)}
+                      className="absolute inset-0 z-20 bg-slate-900 opacity-[0.2]"
                     />
                   )}
 

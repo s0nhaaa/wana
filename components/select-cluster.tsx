@@ -1,6 +1,5 @@
 "use client"
 
-import * as React from "react"
 import { useAppStore } from "@/stores/app"
 import { ToastAction } from "@radix-ui/react-toast"
 
@@ -35,7 +34,7 @@ export function SelectCluster() {
       defaultValue="mainnet-beta"
       onValueChange={(e: Cluster) => changeCluster(e)}
     >
-      <SelectTrigger className="absolute right-6 top-6 w-[160px]">
+      <SelectTrigger className="w-[160px]">
         <SelectValue placeholder="Cluster" />
       </SelectTrigger>
       <SelectContent>
