@@ -1,18 +1,7 @@
 export type SiteConfig = typeof siteConfig
 
 export const siteConfig = {
-  name: "Next.js",
+  name: "Wana | Wallet Analyzer 🎆",
   description:
-    "Beautifully designed components built with Radix UI and Tailwind CSS.",
-  mainNav: [
-    {
-      title: "Home",
-      href: "/",
-    },
-  ],
-  links: {
-    twitter: "https://twitter.com/shadcn",
-    github: "https://github.com/shadcn/ui",
-    docs: "https://ui.shadcn.com",
-  },
+    "A wallet analyzer that takes a fun approach to your past transactions. The goal is to assign creative names or tags to your wallet based on its contents & mint it as a NFT.",
 }
