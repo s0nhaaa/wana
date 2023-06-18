@@ -15,7 +15,10 @@ import {
 import { useToast } from "@/components/ui/use-toast"
 
 export function SelectCluster() {
-  const setCluster = useAppStore((state) => state.setCluster)
+  const [cluster, setCluster] = useAppStore((state) => [
+    state.cluster,
+    state.setCluster,
+  ])
   const { toast } = useToast()
 
   const changeCluster = (cluster: Cluster) => {
@@ -31,7 +34,7 @@ export function SelectCluster() {
 
   return (
     <Select
-      defaultValue="mainnet-beta"
+      defaultValue={cluster ? cluster : "mainnet-beta"}
       onValueChange={(e: Cluster) => changeCluster(e)}
     >
       <SelectTrigger className="w-[160px]">

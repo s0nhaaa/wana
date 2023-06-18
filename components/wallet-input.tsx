@@ -1,10 +1,20 @@
 "use client"
 
-import { FormEvent, useEffect, useRef, useState } from "react"
+import {
+  Dispatch,
+  FormEvent,
+  SetStateAction,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react"
+import { useAppStore } from "@/stores/app"
 import { useWallet } from "@solana/wallet-adapter-react"
 import { PublicKey } from "@solana/web3.js"
 import { ArrowDown, ArrowRight, RotateCcw } from "lucide-react"
 
+import { ShyftTxParsedHistoryResponse } from "@/types/shyft-tx-parsed-history"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -15,14 +25,25 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 
-export function WalletInput() {
+interface WalletInputProps {}
+
+export function WalletInput(props: WalletInputProps) {
   const input = useRef<HTMLInputElement>(null)
   const { publicKey } = useWallet()
   const [walletInput, setWalletInput] = useState<string>(
-    publicKey?.toString() || ""
+    publicKey?.toString() || "Hb2HDX6tnRfw5j442npy58Z2GBzJA58Nz7ipouWGT63p"
   )
   const [isWalletAddress, setIsWalletAddress] = useState(false)
   const [isSubmited, setIsSubmited] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const cluster = useAppStore((state) => state.cluster)
+  const [txHistory, setTxHistory] = useAppStore((state) => [
+    state.txHistory,
+    state.setTxHistory,
+  ])
+
+  const myHeaders = useMemo(() => new Headers(), [])
+  myHeaders.append("x-api-key", process.env.NEXT_PUBLIC_SHYFT_API_KEY as string)
 
   useEffect(() => {
     publicKey && setWalletInput(publicKey.toString())
@@ -38,6 +59,28 @@ export function WalletInput() {
       setIsWalletAddress(PublicKey.isOnCurve(publicKey))
     } catch (error) {
       setIsWalletAddress(false)
+    }
+  }
+
+  const getTransactionHistory = async () => {
+    try {
+      setIsLoading(true)
+      const response = await fetch(
+        `https://api.shyft.to/sol/v1/transaction/history?network=${cluster}&tx_num=10&account=${walletInput}`,
+        {
+          method: "GET",
+          headers: {
+            "x-api-key": process.env.NEXT_PUBLIC_SHYFT_API_KEY as string,
+          },
+        }
+      )
+
+      const data: ShyftTxParsedHistoryResponse = await response.json()
+      setTxHistory(data.result)
+    } catch (error) {
+      console.error(error)
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -58,8 +101,9 @@ export function WalletInput() {
               <TooltipTrigger asChild>
                 {walletInput.length >= 44 && (
                   <Button
-                    disabled={Boolean(walletInput.length < 44)}
+                    disabled={Boolean(walletInput.length < 44) || isLoading}
                     type="submit"
+                    onClick={getTransactionHistory}
                   >
                     {isSubmited ? (
                       <RotateCcw size={18} />
