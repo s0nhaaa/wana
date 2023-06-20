@@ -19,3 +19,23 @@ export const COLORS = [
   "#FDCEDF",
   "#526D82",
 ]
+
+export const LOADING_STATUS = [
+  "Knocking Shyft to get your data...",
+  "Spinning the hamster wheel...",
+  "Chasing rainbows 🌈...",
+  "Preparing the awesomeness...",
+  "Firing up the turbo boosters...",
+  "Tickling the data servers...",
+  "Buckle up, we're flying!",
+  "Embarking on a wild adventure...",
+  "Fireship assembling 🚀...",
+  "We still forming your data...",
+  "1 moment, pleaseee 🥺...",
+]
+
+export const MINTING_STATUS = [
+  "Hold on",
+  "Preparing NFT",
+  "Generating metadata",
+]

@@ -10,10 +10,16 @@ import {
 import { WalletModalProvider } from "@solana/wallet-adapter-react-ui"
 import {
   BackpackWalletAdapter,
+  GlowWalletAdapter,
   PhantomWalletAdapter,
+  SlopeWalletAdapter,
+  SolflareWalletAdapter,
+  TorusWalletAdapter,
+  TrustWalletAdapter,
 } from "@solana/wallet-adapter-wallets"
 import { clusterApiUrl } from "@solana/web3.js"
 
+import Footer from "@/components/footer"
 import HistoryList from "@/components/history-list"
 import SiteHeader from "@/components/site-header"
 import { WalletInput } from "@/components/wallet-input"
@@ -21,8 +27,6 @@ import { WalletInput } from "@/components/wallet-input"
 require("@solana/wallet-adapter-react-ui/styles.css")
 
 export default function IndexPage() {
-  // const network = WalletAdapterNetwork.Devnet
-  // const endpoint = useMemo(() => clusterApiUrl(network), [network])
   const endpoint = process.env.NEXT_PUBLIC_HELIUS_RPC as string
   const [domLoaded, setDomLoaded] = useState(false)
 
@@ -31,7 +35,15 @@ export default function IndexPage() {
   }, [])
 
   const wallets = useMemo(
-    () => [new PhantomWalletAdapter(), new BackpackWalletAdapter()],
+    () => [
+      new PhantomWalletAdapter(),
+      new BackpackWalletAdapter(),
+      new SolflareWalletAdapter(),
+      new GlowWalletAdapter(),
+      new SlopeWalletAdapter(),
+      new TrustWalletAdapter(),
+      new TorusWalletAdapter(),
+    ],
     []
   )
 
@@ -44,12 +56,13 @@ export default function IndexPage() {
               <SiteHeader />
               <div className="relative h-screen w-screen ">
                 <div className="flex h-full w-full items-center justify-center">
-                  <div className="h-[700px] w-[50vw]">
+                  <div className="h-fit max-h-[700px] w-[50vw]">
                     <WalletInput />
                     <HistoryList />
                   </div>
                 </div>
               </div>
+              <Footer />
             </WalletModalProvider>
           </WalletProvider>
         </ConnectionProvider>

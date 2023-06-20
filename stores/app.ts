@@ -9,7 +9,13 @@ interface AppState {
   setCluster: (cluster: Cluster) => void
 
   txHistory: ShyftTxParsedHistoryResult[] | undefined
-  setTxHistory: (txHistory: ShyftTxParsedHistoryResult[]) => void
+  setTxHistory: (txHistory: ShyftTxParsedHistoryResult[] | undefined) => void
+
+  loadingStatus: string
+  setLoadingStatus: (loadingStatus: string) => void
+
+  isLoading: boolean
+  setIsLoading: (isLoading: boolean) => void
 }
 
 export const useAppStore = create<AppState>()(
@@ -19,11 +25,18 @@ export const useAppStore = create<AppState>()(
       setCluster: (cluster: Cluster) => set({ cluster }),
 
       txHistory: undefined,
-      setTxHistory: (txHistory: ShyftTxParsedHistoryResult[]) =>
+      setTxHistory: (txHistory: ShyftTxParsedHistoryResult[] | undefined) =>
         set({ txHistory }),
+
+      loadingStatus: "Hello",
+      setLoadingStatus: (loadingStatus: string) => set({ loadingStatus }),
+
+      isLoading: false,
+      setIsLoading: (isLoading: boolean) => set({ isLoading }),
     }),
     {
       name: "app-storage",
+      partialize: (state) => ({ cluster: state.cluster }),
     }
   )
 )

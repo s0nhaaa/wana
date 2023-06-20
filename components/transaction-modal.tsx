@@ -1,23 +1,28 @@
-import { useRef } from "react"
+import { useMemo, useRef, useState } from "react"
 import Link from "next/link"
 import { formatAddress } from "@/helpers/format-address"
+import { generateAttributes } from "@/helpers/generate-attributes"
 import { parseName, parseProtocol } from "@/helpers/parser"
 import { signAndConfirmTransaction } from "@/helpers/sign-and-confirm-transaction"
 import { useAppStore } from "@/stores/app"
+import { ToastAction } from "@radix-ui/react-toast"
 import {
   useAnchorWallet,
   useConnection,
   useWallet,
 } from "@solana/wallet-adapter-react"
+import { Context, SignatureResult } from "@solana/web3.js"
+import clsx from "clsx"
 import { motion } from "framer-motion"
 import html2canvas from "html2canvas"
-import { Glasses, Puzzle, X } from "lucide-react"
+import { Glasses, Loader2, Puzzle, X } from "lucide-react"
 import moment from "moment"
 
 import { ShyftTxParsedHistoryResult } from "@/types/shyft-tx-parsed-history"
 import {
   COLORS,
   GENERATIVE_COLORS,
+  MINTING_STATUS,
   SHYFT_TRANSLATOR_ENDPOINT,
 } from "@/config/constants"
 import { randomElement } from "@/config/random-element"
@@ -36,6 +41,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import GenerativeBackground from "./generative-background"
 import TxStatus from "./tx-status"
 import { Separator } from "./ui/separator"
+import { useToast } from "./ui/use-toast"
 
 interface TransationModalProps {
   id: string
@@ -52,8 +58,18 @@ export default function TransactionModal({
   const nftRef = useRef<HTMLDivElement | null>(null)
   const { publicKey } = useWallet()
   const anchorWallet = useAnchorWallet()
-
   const { connection } = useConnection()
+  const [isLoading, setIsLoading] = useState(false)
+  const { toast } = useToast()
+  const cellColors = useMemo(
+    () => ({
+      top: randomElement(COLORS),
+      middle: randomElement(COLORS),
+      bottom: randomElement(COLORS),
+    }),
+    []
+  )
+  const [mintingStatus, setMintingStatus] = useState("Please wait")
 
   const exportImageAndMint = async () => {
     if (!nftRef.current || !publicKey) return
@@ -74,12 +90,14 @@ export default function TransactionModal({
     imageName: string,
     creator: string
   ) => {
-    var myHeaders = new Headers()
+    if (!anchorWallet) return
+
+    const myHeaders = new Headers()
     myHeaders.append(
       "x-api-key",
       process.env.NEXT_PUBLIC_SHYFT_API_KEY as string
     )
-    var formdata = new FormData()
+    const formdata = new FormData()
     formdata.append("network", "devnet")
     formdata.append("wallet", creator)
     formdata.append(
@@ -93,15 +111,13 @@ export default function TransactionModal({
     )
     formdata.append(
       "attributes",
-      `[ 
-        {\"trait_type\": \"by\", \"value\": \"${parseProtocol(tx.protocol)}\"},
-        {\"trait_type\": \"date\", \"value\": \"${moment(tx.timestamp).format(
-          "DD/MM/YYYY"
-        )}\"},
-        {\"trait_type\": \"type\", \"value\": \"${tx.type}\"},
-        {\"trait_type\": \"status\", \"value\": \"${tx.status}\"},
-        {\"trait_type\": \"actions\", \"value\": \"${tx.actions.length}\"}
-    ]`
+      generateAttributes(
+        tx.protocol,
+        tx.timestamp,
+        tx.type,
+        tx.status,
+        tx.actions.length
+      )
     )
     formdata.append(
       "external_url",
@@ -119,25 +135,41 @@ export default function TransactionModal({
       redirect: "follow",
     }
 
+    let currentIndex = 0
+
+    const intervalId = setInterval(() => {
+      currentIndex = (currentIndex + 1) % MINTING_STATUS.length
+      setMintingStatus(MINTING_STATUS[currentIndex])
+    }, 2000)
+
     try {
-      if (!anchorWallet) return
+      setIsLoading(true)
       const response = await fetch(
         "https://api.shyft.to/sol/v1/nft/create_detach",
         requestOptions
       )
       const result = await response.json()
       console.log(result)
-      const ret_result = await signAndConfirmTransaction(
+      setMintingStatus("Signing Transaction")
+      clearInterval(intervalId)
+      await signAndConfirmTransaction(
         connection,
         result.result.encoded_transaction,
         anchorWallet,
-        () => {
-          console.log("all finish")
+        (signatureResult: SignatureResult, context: Context) => {
+          toast({
+            title: "Bing ba da bum 🥁",
+            description: `A new NFT just slid into your wallet`,
+            action: <ToastAction altText="Continue">Continue</ToastAction>,
+          })
+          setIsLoading(false)
         }
       )
-      console.log(ret_result)
+      setMintingStatus("Sending NFT to your wallet")
     } catch (error) {
       console.log("error", error)
+      setIsLoading(false)
+      clearInterval(intervalId)
     }
   }
 
@@ -149,6 +181,7 @@ export default function TransactionModal({
         className="relative flex h-fit w-[60vw] select-none rounded-lg bg-background"
       >
         <Button
+          disabled={isLoading}
           className="absolute right-4 top-4 h-9 w-9 p-1"
           variant={"outline"}
           onClick={onClick}
@@ -271,16 +304,16 @@ export default function TransactionModal({
               </p>
               <div className="absolute bottom-7 left-5 flex flex-col gap-2">
                 <div
-                  className="h-4 w-4 rounded-sm"
-                  style={{ backgroundColor: randomElement(COLORS) }}
+                  className={clsx(`h-4 w-4 rounded-sm`)}
+                  style={{ backgroundColor: cellColors.top }}
                 ></div>
                 <div
-                  className="h-4 w-4 rounded-sm"
-                  style={{ backgroundColor: randomElement(COLORS) }}
+                  className={clsx(`h-4 w-4 rounded-sm`)}
+                  style={{ backgroundColor: cellColors.middle }}
                 ></div>
                 <div
-                  className="h-4 w-4 rounded-sm"
-                  style={{ backgroundColor: randomElement(COLORS) }}
+                  className={clsx(`h-4 w-4 rounded-sm`)}
+                  style={{ backgroundColor: cellColors.bottom }}
                 ></div>
               </div>
             </div>
@@ -289,8 +322,17 @@ export default function TransactionModal({
             </Label>
           </CardContent>
           <CardFooter className=" flex-row-reverse gap-2">
-            <Button onClick={exportImageAndMint}>
-              <Puzzle className="mr-2 h-4 w-4" /> Mint transaction as NFT
+            <Button onClick={exportImageAndMint} disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {mintingStatus}
+                </>
+              ) : (
+                <>
+                  <Puzzle className="mr-2 h-4 w-4" /> Mint transaction as NFT
+                </>
+              )}
             </Button>
           </CardFooter>
         </Card>
