@@ -1,13 +1,20 @@
+import { useRef } from "react"
 import Link from "next/link"
 import { formatAddress } from "@/helpers/format-address"
 import { parseName, parseProtocol } from "@/helpers/parser"
+import { signAndConfirmTransaction } from "@/helpers/sign-and-confirm-transaction"
 import { useAppStore } from "@/stores/app"
-import { cx } from "class-variance-authority"
+import {
+  useAnchorWallet,
+  useConnection,
+  useWallet,
+} from "@solana/wallet-adapter-react"
 import { motion } from "framer-motion"
+import html2canvas from "html2canvas"
 import { Glasses, Puzzle, X } from "lucide-react"
 import moment from "moment"
 
-import { ShyftTxParsedHistory } from "@/types/shyft-tx-parsed-history"
+import { ShyftTxParsedHistoryResult } from "@/types/shyft-tx-parsed-history"
 import {
   COLORS,
   GENERATIVE_COLORS,
@@ -28,11 +35,11 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 
 import GenerativeBackground from "./generative-background"
 import TxStatus from "./tx-status"
-import { AspectRatio } from "./ui/aspect-ratio"
+import { Separator } from "./ui/separator"
 
 interface TransationModalProps {
   id: string
-  tx: ShyftTxParsedHistory
+  tx: ShyftTxParsedHistoryResult
   onClick: () => void
 }
 
@@ -42,6 +49,97 @@ export default function TransactionModal({
   onClick,
 }: TransationModalProps) {
   const cluster = useAppStore((state) => state.cluster)
+  const nftRef = useRef<HTMLDivElement | null>(null)
+  const { publicKey } = useWallet()
+  const anchorWallet = useAnchorWallet()
+
+  const { connection } = useConnection()
+
+  const exportImageAndMint = async () => {
+    if (!nftRef.current || !publicKey) return
+
+    const canvas = await html2canvas(nftRef.current)
+    canvas.toBlob(
+      (blob) => {
+        if (!blob) console.log("convert image fail")
+        blob && mintNFT(blob, `${tx.generatedName}.png`, publicKey.toString())
+      },
+      "image/png",
+      1
+    )
+  }
+
+  const mintNFT = async (
+    imageBlob: Blob,
+    imageName: string,
+    creator: string
+  ) => {
+    var myHeaders = new Headers()
+    myHeaders.append(
+      "x-api-key",
+      process.env.NEXT_PUBLIC_SHYFT_API_KEY as string
+    )
+    var formdata = new FormData()
+    formdata.append("network", "devnet")
+    formdata.append("wallet", creator)
+    formdata.append(
+      "name",
+      tx.generatedName ? tx.generatedName : parseName(tx.type)
+    )
+    formdata.append("symbol", `WANA`)
+    formdata.append(
+      "description",
+      "This transaction NFT generated and minted from Wana 👛!"
+    )
+    formdata.append(
+      "attributes",
+      `[ 
+        {\"trait_type\": \"by\", \"value\": \"${parseProtocol(tx.protocol)}\"},
+        {\"trait_type\": \"date\", \"value\": \"${moment(tx.timestamp).format(
+          "DD/MM/YYYY"
+        )}\"},
+        {\"trait_type\": \"type\", \"value\": \"${tx.type}\"},
+        {\"trait_type\": \"status\", \"value\": \"${tx.status}\"},
+        {\"trait_type\": \"actions\", \"value\": \"${tx.actions.length}\"}
+    ]`
+    )
+    formdata.append(
+      "external_url",
+      `${SHYFT_TRANSLATOR_ENDPOINT}tx/${tx.signatures[0]}?cluster=${cluster}`
+    )
+    formdata.append("max_supply", "0")
+    formdata.append("royalty", "100")
+    formdata.append("file", imageBlob, imageName)
+    formdata.append("nft_receiver", creator)
+
+    const requestOptions: RequestInit = {
+      method: "POST",
+      headers: myHeaders,
+      body: formdata,
+      redirect: "follow",
+    }
+
+    try {
+      if (!anchorWallet) return
+      const response = await fetch(
+        "https://api.shyft.to/sol/v1/nft/create_detach",
+        requestOptions
+      )
+      const result = await response.json()
+      console.log(result)
+      const ret_result = await signAndConfirmTransaction(
+        connection,
+        result.result.encoded_transaction,
+        anchorWallet,
+        () => {
+          console.log("all finish")
+        }
+      )
+      console.log(ret_result)
+    } catch (error) {
+      console.log("error", error)
+    }
+  }
 
   return (
     <div className="absolute inset-0 z-30 flex select-none items-center justify-center">
@@ -58,7 +156,7 @@ export default function TransactionModal({
           <X size={16} />
         </Button>
 
-        <Card className="w-[60%] border-none">
+        <Card className="flex w-[60%] flex-col justify-between border-none">
           <CardHeader>
             <CardTitle className="flex flex-col gap-2">
               <Label
@@ -73,7 +171,7 @@ export default function TransactionModal({
               <div>
                 Made by{" "}
                 <Link
-                  className="group relative  text-primary hover:underline"
+                  className="group relative text-primary hover:underline"
                   href={
                     new URL(
                       `address/${tx.protocol.address}?${
@@ -136,40 +234,39 @@ export default function TransactionModal({
             </Link>
           </CardFooter>
         </Card>
-
+        <Separator orientation="vertical" />
         <Card className="flex w-[40%] flex-col justify-between border-none">
           <CardHeader>
             <CardTitle className="flex flex-col gap-2">
               <Label className="text-muted-foreground ">
-                NFT is generated by GPT
+                Generative transaction NFT
               </Label>
             </CardTitle>
           </CardHeader>
           <CardContent className="-mt-2">
-            <div className="relative w-full">
-              <AspectRatio
-                ratio={1 / 1}
-                className="overflow-hidden rounded-lg "
-              >
+            <div
+              className="relative w-full overflow-hidden rounded-lg bg-transparent"
+              ref={nftRef}
+            >
+              <div className="aspect-[1/1] w-full overflow-hidden bg-transparent">
                 <GenerativeBackground
                   name={tx.signatures[0]}
                   colors={GENERATIVE_COLORS}
-                  size={500}
-                  className="rounded-lg "
+                  size={600}
                   title="sh"
                   square={true}
                 />
-              </AspectRatio>
+              </div>
               <p className="absolute left-4 top-4 text-sm font-medium text-[#ffffff]">
                 WANA
               </p>
               <p className="absolute right-4 top-4 text-sm font-medium text-[#ffffff]">
                 SHYFT
               </p>
-              <p className="absolute left-[18px] top-[75px] text-[36px] font-bold text-[#ffffff]">
+              <p className="absolute left-[18px] top-[75px] w-[80%] text-[36px] font-bold text-[#ffffff]">
                 {tx.generatedName ? tx.generatedName : parseName(tx.type)}
               </p>
-              <p className="absolute bottom-5 right-6 text-[36px] font-bold text-[#ffffff]">
+              <p className="absolute bottom-6 right-6 text-[36px] font-bold text-[#ffffff]">
                 #{formatAddress(tx.signatures[0])}
               </p>
               <div className="absolute bottom-7 left-5 flex flex-col gap-2">
@@ -187,9 +284,12 @@ export default function TransactionModal({
                 ></div>
               </div>
             </div>
+            <Label className="italic text-muted-foreground">
+              * NFT minted will be live on Solana devnet
+            </Label>
           </CardContent>
           <CardFooter className=" flex-row-reverse gap-2">
-            <Button>
+            <Button onClick={exportImageAndMint}>
               <Puzzle className="mr-2 h-4 w-4" /> Mint transaction as NFT
             </Button>
           </CardFooter>

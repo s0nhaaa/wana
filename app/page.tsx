@@ -21,9 +21,9 @@ import { WalletInput } from "@/components/wallet-input"
 require("@solana/wallet-adapter-react-ui/styles.css")
 
 export default function IndexPage() {
-  const network = WalletAdapterNetwork.Devnet
-
-  const endpoint = useMemo(() => clusterApiUrl(network), [network])
+  // const network = WalletAdapterNetwork.Devnet
+  // const endpoint = useMemo(() => clusterApiUrl(network), [network])
+  const endpoint = process.env.NEXT_PUBLIC_HELIUS_RPC as string
   const [domLoaded, setDomLoaded] = useState(false)
 
   useEffect(() => {
@@ -32,8 +32,7 @@ export default function IndexPage() {
 
   const wallets = useMemo(
     () => [new PhantomWalletAdapter(), new BackpackWalletAdapter()],
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [network]
+    []
   )
 
   return (

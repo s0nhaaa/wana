@@ -6,7 +6,7 @@ import { AnimatePresence, motion } from "framer-motion"
 import { Glasses } from "lucide-react"
 import moment from "moment"
 
-import { ShyftTxParsedHistory } from "@/types/shyft-tx-parsed-history"
+import { ShyftTxParsedHistoryResult } from "@/types/shyft-tx-parsed-history"
 import {
   GENERATIVE_COLORS,
   SHYFT_TRANSLATOR_ENDPOINT,
@@ -31,12 +31,13 @@ import GenerativeBackground from "./generative-background"
 import TxStatus from "./tx-status"
 
 export default function HistoryList() {
-  const [selectedTx, setSelectedTx] = useState<ShyftTxParsedHistory | null>()
+  const [selectedTx, setSelectedTx] =
+    useState<ShyftTxParsedHistoryResult | null>()
   const [txHistory, setTxHistory] = useAppStore((state) => [
     state.txHistory,
     state.setTxHistory,
   ])
-  const [history, setHistory] = useState<ShyftTxParsedHistory[]>([])
+  const [history, setHistory] = useState<ShyftTxParsedHistoryResult[]>([])
   const cluster = useAppStore((state) => state.cluster)
 
   useEffect(() => {
@@ -53,41 +54,19 @@ export default function HistoryList() {
           }\n${index + 1}.2. Transaction type is ${parseName(tx.type)}`
         })
 
-        // const res = await fetch(`api/g`, {
-        //   method: "POST",
-        //   headers: {
-        //     "Content-Type": "application/json",
-        //   },
-        //   body: JSON.stringify({
-        //     prompt: formatedTransaction,
-        //   }),
-        // })
+        const res = await fetch(`api/g`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            prompt: formatedTransaction,
+          }),
+        })
 
-        // const data = await res.json()
+        const data = await res.json()
 
-        // const parsedData = JSON.parse(data.data)
-        const parsedData: { [key: string]: string } = {
-          "2WeLuTpvWKaCX93qFssvKgk8YgrLwu1xuhmxQU3mfqm29Cks32xQuXtvpQob3m8HtRvGZ2vEYWMMoMYJUdbHUk5Z":
-            "CryptoAccounts On Tap",
-          "2gjbKEKoLMuJ9jwtA4xG4QibL5fvjryinqrfR2EFgRvhMNbmVsKru65oJQyBk8RRZamFdExPfTtPVDWsbnXbqrLr":
-            "Minty-Fresh NFT",
-          "2sMMotbRXiqCmz5RZmmdMqoyigKsYfNGF9DnBCn2gK5UQrpT2aXDz31KJrKyZiTzUbS4NjNRq4o9cFPH5jvqDV3k":
-            "CryptoAccount Factory",
-          "2xBagg5RXPQgrbNisBB95ytmjjo9YjXuXMkKi3J5Go11LrMK85An4cMF2wtQr1CRUawuLYPdTY77xxynSUbic1a7":
-            "CryptoAccounts Galore",
-          "3k5ZXFvLPhpphbARwiz8jyjjoLFQcbr1qo1GxYpGZWk4ZYE3go4ciJ2GJMkHbxUgLtmyAo1WWhMbuDYxc9mUNcEu":
-            "Creating CryptoAccounts",
-          "5AYs9Dor1azrzAhKnEfod2cH8YcSRaHhBzdur1BTGPFsCdUoWDFzRMKJGsuXhK2VSWMvbpznMoizQqWbRHLDi2Hu":
-            "CryptoAccount 101",
-          "5vXG93jMFcFqEnESHsMxEwYMLb24QKEwxSY9rZfSyXX7B5SamZwqdcfrbeULXLDdNbKituk1MmHvFYTffg1stb78":
-            "CryptoAccount Frenzy",
-          "21QZ2B8akDHmujFKmc7KLVfjHQryDkCGQ9VunsNchh2jYe7wr3QFE7pPPaUcGKoR1Eir8s2T5cjEcxHbUaNCTdZH":
-            "CryptoAccount Magic",
-          "23ACJDjS6wETbVn1MJtqXRM3gmmL2hixQYA8cM9PqwQh1uiw5HbBJf822vNg1Rumebnq7jJdkoFNcCTQjqPd2YRP":
-            "CryptoAcount Party",
-          "35Prk9taUYGpaDpevQAWbxxhFwgcdvH91XWmr86BaX8JGJm8PwKDLebdLPRQvzubc7mU2Fq53Qinxyub1TDJ8XtM":
-            "Go CryptoAccount Go!",
-        }
+        const parsedData = JSON.parse(data.data)
         console.log(parsedData)
 
         if (parsedData) {
@@ -128,7 +107,7 @@ export default function HistoryList() {
                       title="sh"
                       square={true}
                     />
-                    {tx.generatedName ? tx.generatedName : parseName(tx.type)}
+                    {tx.generatedName ? tx.generatedName : parseName(tx.type)}{" "}
                     <div className="flex gap-2">
                       <TxStatus status={tx.status} />
                     </div>
