@@ -8,8 +8,8 @@ interface AppState {
   cluster: Cluster
   setCluster: (cluster: Cluster) => void
 
-  txHistory: ShyftTxParsedHistory | undefined
-  setTxHistory: (txHistory: ShyftTxParsedHistory) => void
+  txHistory: ShyftTxParsedHistory[] | undefined
+  setTxHistory: (txHistory: ShyftTxParsedHistory[]) => void
 }
 
 export const useAppStore = create<AppState>()(
@@ -19,7 +19,7 @@ export const useAppStore = create<AppState>()(
       setCluster: (cluster: Cluster) => set({ cluster }),
 
       txHistory: undefined,
-      setTxHistory: (txHistory: ShyftTxParsedHistory) => set({ txHistory }),
+      setTxHistory: (txHistory: ShyftTxParsedHistory[]) => set({ txHistory }),
     }),
     {
       name: "app-storage",

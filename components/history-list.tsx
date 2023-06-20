@@ -1,12 +1,16 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { parseProtocol } from "@/helpers/parser"
+import { parseName, parseProtocol } from "@/helpers/parser"
 import { useAppStore } from "@/stores/app"
 import { AnimatePresence, motion } from "framer-motion"
-import { BellRing, Glasses } from "lucide-react"
+import { Glasses } from "lucide-react"
 import moment from "moment"
 
-import { Badge } from "@/components/ui/badge"
+import { ShyftTxParsedHistory } from "@/types/shyft-tx-parsed-history"
+import {
+  GENERATIVE_COLORS,
+  SHYFT_TRANSLATOR_ENDPOINT,
+} from "@/config/constants"
 import {
   Card,
   CardContent,
@@ -23,52 +27,110 @@ import {
 } from "@/components/ui/tooltip"
 import TransactionModal from "@/components/transaction-modal"
 
+import GenerativeBackground from "./generative-background"
+import TxStatus from "./tx-status"
+
 export default function HistoryList() {
-  const [index, setIndex] = useState<number | boolean>(false)
+  const [selectedTx, setSelectedTx] = useState<ShyftTxParsedHistory | null>()
   const [txHistory, setTxHistory] = useAppStore((state) => [
     state.txHistory,
     state.setTxHistory,
   ])
+  const [history, setHistory] = useState<ShyftTxParsedHistory[]>([])
   const cluster = useAppStore((state) => state.cluster)
 
   useEffect(() => {
     console.log(txHistory)
+
+    const generatePrompt = async () => {
+      let formatedTransaction = ""
+
+      if (txHistory && txHistory.length > 0) {
+        const txHistoryClone = structuredClone(txHistory)
+        txHistory.map((tx, index) => {
+          formatedTransaction += `\n${index + 1}.1. Transaction Id is ${
+            tx.signatures[0]
+          }\n${index + 1}.2. Transaction type is ${parseName(tx.type)}`
+        })
+
+        // const res = await fetch(`api/g`, {
+        //   method: "POST",
+        //   headers: {
+        //     "Content-Type": "application/json",
+        //   },
+        //   body: JSON.stringify({
+        //     prompt: formatedTransaction,
+        //   }),
+        // })
+
+        // const data = await res.json()
+
+        // const parsedData = JSON.parse(data.data)
+        const parsedData: { [key: string]: string } = {
+          "2WeLuTpvWKaCX93qFssvKgk8YgrLwu1xuhmxQU3mfqm29Cks32xQuXtvpQob3m8HtRvGZ2vEYWMMoMYJUdbHUk5Z":
+            "CryptoAccounts On Tap",
+          "2gjbKEKoLMuJ9jwtA4xG4QibL5fvjryinqrfR2EFgRvhMNbmVsKru65oJQyBk8RRZamFdExPfTtPVDWsbnXbqrLr":
+            "Minty-Fresh NFT",
+          "2sMMotbRXiqCmz5RZmmdMqoyigKsYfNGF9DnBCn2gK5UQrpT2aXDz31KJrKyZiTzUbS4NjNRq4o9cFPH5jvqDV3k":
+            "CryptoAccount Factory",
+          "2xBagg5RXPQgrbNisBB95ytmjjo9YjXuXMkKi3J5Go11LrMK85An4cMF2wtQr1CRUawuLYPdTY77xxynSUbic1a7":
+            "CryptoAccounts Galore",
+          "3k5ZXFvLPhpphbARwiz8jyjjoLFQcbr1qo1GxYpGZWk4ZYE3go4ciJ2GJMkHbxUgLtmyAo1WWhMbuDYxc9mUNcEu":
+            "Creating CryptoAccounts",
+          "5AYs9Dor1azrzAhKnEfod2cH8YcSRaHhBzdur1BTGPFsCdUoWDFzRMKJGsuXhK2VSWMvbpznMoizQqWbRHLDi2Hu":
+            "CryptoAccount 101",
+          "5vXG93jMFcFqEnESHsMxEwYMLb24QKEwxSY9rZfSyXX7B5SamZwqdcfrbeULXLDdNbKituk1MmHvFYTffg1stb78":
+            "CryptoAccount Frenzy",
+          "21QZ2B8akDHmujFKmc7KLVfjHQryDkCGQ9VunsNchh2jYe7wr3QFE7pPPaUcGKoR1Eir8s2T5cjEcxHbUaNCTdZH":
+            "CryptoAccount Magic",
+          "23ACJDjS6wETbVn1MJtqXRM3gmmL2hixQYA8cM9PqwQh1uiw5HbBJf822vNg1Rumebnq7jJdkoFNcCTQjqPd2YRP":
+            "CryptoAcount Party",
+          "35Prk9taUYGpaDpevQAWbxxhFwgcdvH91XWmr86BaX8JGJm8PwKDLebdLPRQvzubc7mU2Fq53Qinxyub1TDJ8XtM":
+            "Go CryptoAccount Go!",
+        }
+        console.log(parsedData)
+
+        if (parsedData) {
+          txHistoryClone.forEach((tx) => {
+            tx.generatedName = parsedData[tx.signatures[0]]
+          })
+        } else console.log("Cannot parse")
+
+        setHistory(txHistoryClone)
+      }
+    }
+
+    txHistory && generatePrompt()
   }, [txHistory])
 
   return (
     <>
       <ScrollArea className={`mt-2 h-[700px] w-full`}>
-        {txHistory &&
-          txHistory.length > 0 &&
-          txHistory.map((tx, i) => (
+        {history &&
+          history.length > 0 &&
+          history.map((tx, i) => (
             <motion.div
               key={i}
               className="mb-3  w-[100%] rounded-sm"
-              layoutId={String(i)}
+              layoutId={tx.signatures[0]}
             >
               <Card
                 className="relative select-none hover:border-accent-foreground"
-                onClick={() => setIndex(i)}
+                onClick={() => setSelectedTx(tx)}
               >
                 <CardHeader>
                   <CardTitle className="relative flex items-center gap-2">
-                    {tx.type}
+                    <GenerativeBackground
+                      name={tx.signatures[0]}
+                      colors={GENERATIVE_COLORS}
+                      size={20}
+                      className="rounded-lg"
+                      title="sh"
+                      square={true}
+                    />
+                    {tx.generatedName ? tx.generatedName : parseName(tx.type)}
                     <div className="flex gap-2">
-                      {tx.status === "Fail" ? (
-                        <Badge
-                          variant="default"
-                          className="select-none bg-[#E97A76] text-[#410704]"
-                        >
-                          Transaction Fail
-                        </Badge>
-                      ) : (
-                        <Badge
-                          variant="default"
-                          className=" select-none bg-[#6CD09E] text-[#123222]"
-                        >
-                          Transaction Success
-                        </Badge>
-                      )}
+                      <TxStatus status={tx.status} />
                     </div>
                     <TooltipProvider>
                       <Tooltip>
@@ -81,7 +143,7 @@ export default function HistoryList() {
                                     ? `cluster=${cluster}`
                                     : ""
                                 }`,
-                                "https://translator.shyft.to/"
+                                SHYFT_TRANSLATOR_ENDPOINT
                               )
                             }
                             target="_blank"
@@ -107,7 +169,7 @@ export default function HistoryList() {
                               ? `cluster=${cluster}`
                               : ""
                           }`,
-                          "https://translator.shyft.to/"
+                          SHYFT_TRANSLATOR_ENDPOINT
                         )
                       }
                       target="_blank"
@@ -116,106 +178,28 @@ export default function HistoryList() {
                     </Link>{" "}
                     {moment(tx.timestamp).fromNow()}
                   </CardDescription>
-                  <CardContent className=" grid gap-3 p-0">
-                    <div className=" flex w-full space-x-4 rounded-md border p-4">
-                      <BellRing />
-                      <div className="flex-1 space-y-1">
-                        <p className="text-sm font-medium leading-none">
-                          Wrapper SOL
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          Hb2HDX6tnRfw5j442npy58Z2GBzJA58Nz7ipouWGT63p
-                        </p>
+                  <CardContent className="grid gap-3 p-0">
+                    {tx.actions.slice(0, 2).map((action, index) => (
+                      <div
+                        key={index}
+                        className="flex w-full flex-col space-x-4 rounded-md border p-4"
+                      >
+                        <div className="flex-1 space-y-1">
+                          <p className="text-sm font-medium leading-none">
+                            {parseName(action.type)}
+                          </p>
+                        </div>
                       </div>
-                    </div>
+                    ))}
                   </CardContent>
                 </CardHeader>
               </Card>
             </motion.div>
           ))}
-
-        {/* {Array(3)
-          .fill(0)
-          .map((item, i) => (
-            <motion.div
-              key={i}
-              className="mb-3  w-[100%] rounded-sm"
-              layoutId={String(i)}
-            >
-              <Card
-                className="relative select-none hover:border-accent-foreground"
-                onClick={() => setIndex(i)}
-              >
-                <CardHeader>
-                  <CardTitle className="relative flex items-center gap-2">
-                    SOL Transfer
-                    <div className="flex gap-2">
-                      <Badge variant="default" className=" select-none">
-                        Transaction Success
-                      </Badge>
-                      <Badge variant="default" className=" select-none">
-                        Transaction Fail
-                      </Badge>
-                    </div>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Link
-                            href={
-                              new URL(
-                                `address/TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA`,
-                                "https://translator.shyft.to/"
-                              )
-                            }
-                            target="_blank"
-                            className=" absolute right-0 inline-flex h-9 w-9 select-none items-center justify-center rounded-md border border-input p-1 text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
-                          >
-                            <Glasses size={16} />
-                          </Link>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>View on Shyft Transalator</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </CardTitle>
-                  <CardDescription>
-                    Made by{" "}
-                    <Link
-                      className="group relative  text-primary hover:underline"
-                      href={
-                        new URL(
-                          `address/TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA`,
-                          "https://translator.shyft.to/"
-                        )
-                      }
-                      target="_blank"
-                    >
-                      Token Program
-                    </Link>{" "}
-                    8 minutes ago
-                  </CardDescription>
-                  <CardContent className=" grid gap-3 p-0">
-                    <div className=" flex w-full space-x-4 rounded-md border p-4">
-                      <BellRing />
-                      <div className="flex-1 space-y-1">
-                        <p className="text-sm font-medium leading-none">
-                          Wrapper SOL
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          Hb2HDX6tnRfw5j442npy58Z2GBzJA58Nz7ipouWGT63p
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </CardHeader>
-              </Card>
-            </motion.div>
-          ))} */}
       </ScrollArea>
 
       <AnimatePresence>
-        {index !== false && (
+        {selectedTx && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 0.6 }}
@@ -225,11 +209,12 @@ export default function HistoryList() {
           />
         )}
 
-        {index !== false && (
+        {selectedTx && (
           <TransactionModal
-            id={String(index)}
+            tx={selectedTx}
+            id={selectedTx.signatures[0]}
             key="image"
-            onClick={() => setIndex(false)}
+            onClick={() => setSelectedTx(null)}
           />
         )}
       </AnimatePresence>

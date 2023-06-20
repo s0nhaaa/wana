@@ -26,8 +26,6 @@ export default function IndexPage() {
   const endpoint = useMemo(() => clusterApiUrl(network), [network])
   const [domLoaded, setDomLoaded] = useState(false)
 
-  const { publicKey } = useWallet()
-
   useEffect(() => {
     setDomLoaded(true)
   }, [])
@@ -47,7 +45,7 @@ export default function IndexPage() {
               <SiteHeader />
               <div className="relative h-screen w-screen ">
                 <div className="flex h-full w-full items-center justify-center">
-                  <div className="h-[700px] w-[60vw]">
+                  <div className="h-[700px] w-[50vw]">
                     <WalletInput />
                     <HistoryList />
                   </div>

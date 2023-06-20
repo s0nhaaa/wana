@@ -3,18 +3,30 @@ import { formatAddress } from "./format-address"
 export const parseProtocol = (protocol: { name: string; address: string }) => {
   if (!protocol.name) return formatAddress(protocol.address)
 
-  const parts = protocol.name.split("_")
-  const firstWord = parts[0]
-    .toLowerCase()
-    .replace(/^\w/, (c) => c.toUpperCase())
+  return parseName(protocol.name)
+}
 
-  if (parts.length === 1) {
-    return firstWord
+export function parseName(name: string) {
+  try {
+    if (name.includes("_")) {
+      var words = name.split("_")
+      var capitalizedText = ""
+      for (let index = 0; index < words.length; index++) {
+        capitalizedText += capitalizeText(words[index]) + " "
+      }
+      return capitalizedText
+    } else return capitalizeText(name)
+  } catch (error) {
+    return name
   }
+}
 
-  const remainingWords = parts
-    .slice(1)
-    .map((word) => word.toLowerCase().replace(/^\w/, (c) => c.toUpperCase()))
-
-  return `${firstWord} ${remainingWords.join(" ")}`
+function capitalizeText(text: string) {
+  try {
+    if (text === "NFT") return "NFT"
+    else if (text === "SOL") return "SOL"
+    else return text[0].toUpperCase() + text.substring(1).toLowerCase()
+  } catch (error) {
+    return text
+  }
 }

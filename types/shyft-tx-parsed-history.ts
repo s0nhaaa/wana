@@ -6,13 +6,7 @@ export type ShyftTxParsedHistoryResponse = {
     fee: number
     fee_payer: string
     actions: {
-      info:
-        | {
-            sender: string
-            receiver: string
-            amount: number
-          }
-        | {}
+      info: any
       source_protocol: string
       type: string
     }[]
@@ -24,7 +18,8 @@ export type ShyftTxParsedHistoryResponse = {
     type: string
     signers: string[]
     signatures: string[]
-  }[]
+    generatedName?: string
+  }
 }
 
 export type ShyftTxParsedHistory = ShyftTxParsedHistoryResponse["result"]
