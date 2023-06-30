@@ -141,7 +141,6 @@ export default function TransactionModal({
       method: "POST",
       headers: myHeaders,
       body: formdata,
-      redirect: "follow",
     }
 
     let currentIndex = 0
