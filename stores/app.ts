@@ -21,14 +21,15 @@ interface AppState {
 export const useAppStore = create<AppState>()(
   persist(
     (set) => ({
-      cluster: "mainnet-beta",
+      cluster: "devnet",
       setCluster: (cluster: Cluster) => set({ cluster }),
 
       txHistory: undefined,
       setTxHistory: (txHistory: ShyftTxParsedHistoryResult[] | undefined) =>
         set({ txHistory }),
 
-      loadingStatus: "Hello",
+      loadingStatus:
+        "GM! Paste wallet address to input field above 👆. Or connect wallet",
       setLoadingStatus: (loadingStatus: string) => set({ loadingStatus }),
 
       isLoading: false,

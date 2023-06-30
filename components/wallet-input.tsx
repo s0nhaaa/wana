@@ -116,6 +116,7 @@ export function WalletInput(props: WalletInputProps) {
             placeholder="Ex: Hb2HDX6tnRfw5j442npy58Z2GBzJA58Nz7ipouWGT63p"
             value={walletInput}
             onChange={(e) => setWalletInput(e.target.value)}
+            disabled={isLoading}
           />
           <TooltipProvider>
             <Tooltip>

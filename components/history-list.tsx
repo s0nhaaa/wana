@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
+import { cleanup } from "@/helpers/cleanup"
 import { getValueByKey } from "@/helpers/get-value-by-key"
 import { parseName, parseProtocol } from "@/helpers/parser"
 import { useAppStore } from "@/stores/app"
@@ -88,7 +89,6 @@ export default function HistoryList() {
       }, 2000)
 
       try {
-        console.log(formatedTransaction)
         const res = await fetch(`api/g`, {
           method: "POST",
           headers: {
@@ -100,11 +100,14 @@ export default function HistoryList() {
         })
 
         const data = await res.json()
-        const parsedData = JSON.parse(data.data)
+        console.log(data.data)
+        console.log(cleanup(data.data))
+
+        const parsedData = JSON.parse(cleanup(data.data))
+        console.log(parsedData)
 
         if (parsedData) {
           txHistoryClone.forEach((tx) => {
-            console.log(tx.signatures[0].slice(0, 8))
             tx.generatedName = getValueByKey(
               parsedData,
               tx.signatures[0].slice(0, 8),
@@ -117,6 +120,13 @@ export default function HistoryList() {
         setHistory(txHistoryClone)
       } catch (error) {
         console.log(error)
+        txHistoryClone.forEach((tx) => {
+          tx.generatedName = parseName(tx.type)
+        })
+        setLoadingStatus(
+          "GPT couldn't find the better name than default. Here're yours: "
+        )
+        setHistory(txHistoryClone)
       } finally {
         clearInterval(intervalId)
         setIsLoading(false)

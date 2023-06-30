@@ -56,7 +56,7 @@ export default function TransactionModal({
 }: TransationModalProps) {
   const cluster = useAppStore((state) => state.cluster)
   const nftRef = useRef<HTMLDivElement | null>(null)
-  const { publicKey } = useWallet()
+  const { publicKey, connected } = useWallet()
   const anchorWallet = useAnchorWallet()
   const { connection } = useConnection()
   const [isLoading, setIsLoading] = useState(false)
@@ -108,6 +108,15 @@ export default function TransactionModal({
     formdata.append(
       "description",
       "This transaction NFT generated and minted from Wana 👛!"
+    )
+    console.log(
+      generateAttributes(
+        tx.protocol,
+        tx.timestamp,
+        tx.type,
+        tx.status,
+        tx.actions.length
+      )
     )
     formdata.append(
       "attributes",
@@ -322,7 +331,10 @@ export default function TransactionModal({
             </Label>
           </CardContent>
           <CardFooter className=" flex-row-reverse gap-2">
-            <Button onClick={exportImageAndMint} disabled={isLoading}>
+            <Button
+              onClick={exportImageAndMint}
+              disabled={isLoading || !connected}
+            >
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
