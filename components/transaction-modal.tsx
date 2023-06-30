@@ -296,7 +296,7 @@ export default function TransactionModal({
               <p className="absolute right-4 top-4 text-sm font-medium text-[#ffffff]">
                 SHYFT
               </p>
-              <p className="absolute left-[18px] top-[75px] w-[80%] text-[36px] font-bold text-[#ffffff]">
+              <p className="absolute left-[18px] top-[75px] w-[80%] text-[24px] font-bold text-[#ffffff]">
                 {tx.generatedName ? tx.generatedName : parseName(tx.type)}
               </p>
               <p className="absolute bottom-6 right-6 text-[36px] font-bold text-[#ffffff]">

@@ -13,7 +13,7 @@ export async function POST(req: Request) {
 
   const response = await openai.createCompletion({
     model: "text-davinci-003",
-    prompt: `I want you to act as a talent content creator working on solana blockchain industry. I will give you some informations about some transactions, You will give me a fun and playful title for each of them. The transaction informations are:  ${prompt} I want the result only the JSON format, the key is the transaction is and the value is the title. \nThe title must be follow the rules:\n- One line sentence less than 50 characters\n- Fun and playful`,
+    prompt: `You are a talent content creator working on solana blockchain industry. You will give me a fun and playful title for each transaction. Do not include '\'\'\. Must be Json. \nExample title for a transaction:\nTransaction:\n1.1. Transaction Id is 5WYTQhAp\n1.2. Transaction type is SOL_TRANSFER\n\nThe JSON Result:\n[{”5WYTQhAp”: “The Great Solana Shuffle: Transfer Complete!”}]\n\nThe list of transaction:  ${prompt} \n The result title (no '\'\'\ and json format):`,
     temperature: 1,
     max_tokens: 1000,
     top_p: 1,
@@ -22,5 +22,6 @@ export async function POST(req: Request) {
   })
 
   const data = (await response.json()) as ResponseTypes["createCompletion"]
+  console.log(data)
   return NextResponse.json({ data: data.choices[0].text })
 }

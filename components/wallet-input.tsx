@@ -30,7 +30,7 @@ export function WalletInput(props: WalletInputProps) {
   const input = useRef<HTMLInputElement>(null)
   const { publicKey } = useWallet()
   const [walletInput, setWalletInput] = useState<string>(
-    publicKey?.toString() || "Hb2HDX6tnRfw5j442npy58Z2GBzJA58Nz7ipouWGT63p"
+    publicKey?.toString() || ""
   )
   const cluster = useAppStore((state) => state.cluster)
   const [

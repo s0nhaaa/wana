@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
+import { getValueByKey } from "@/helpers/get-value-by-key"
 import { parseName, parseProtocol } from "@/helpers/parser"
 import { useAppStore } from "@/stores/app"
 import { useWallet } from "@solana/wallet-adapter-react"
@@ -72,9 +73,11 @@ export default function HistoryList() {
       const txHistoryClone = structuredClone(txHistory)
 
       txHistory.map((tx, index) => {
-        formatedTransaction += `\n${index + 1}.1. Transaction Id is ${
-          tx.signatures[0]
-        }\n${index + 1}.2. Transaction type is ${parseName(tx.type)}`
+        formatedTransaction += `\n${
+          index + 1
+        }.1. Transaction Id is ${tx.signatures[0].slice(0, 8)}\n${
+          index + 1
+        }.2. Transaction type is ${parseName(tx.type)}`
       })
 
       let currentIndex = 0
@@ -85,23 +88,30 @@ export default function HistoryList() {
       }, 2000)
 
       try {
-        // const res = await fetch(`api/g`, {
-        //   method: "POST",
-        //   headers: {
-        //     "Content-Type": "application/json",
-        //   },
-        //   body: JSON.stringify({
-        //     prompt: formatedTransaction,
-        //   }),
-        // })
+        console.log(formatedTransaction)
+        const res = await fetch(`api/g`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            prompt: formatedTransaction,
+          }),
+        })
 
-        // const data = await res.json()
-        // const parsedData = JSON.parse(data.data)
-        // if (parsedData) {
-        //   txHistoryClone.forEach((tx) => {
-        //     tx.generatedName = parsedData[tx.signatures[0]]
-        //   })
-        // }
+        const data = await res.json()
+        const parsedData = JSON.parse(data.data)
+
+        if (parsedData) {
+          txHistoryClone.forEach((tx) => {
+            console.log(tx.signatures[0].slice(0, 8))
+            tx.generatedName = getValueByKey(
+              parsedData,
+              tx.signatures[0].slice(0, 8),
+              parseName(tx.type)
+            )
+          })
+        }
 
         setLoadingStatus("Here're yours: ")
         setHistory(txHistoryClone)
